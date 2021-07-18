@@ -4,6 +4,7 @@ import itertools
 from typing import Generator
 from typing import NamedTuple
 
+
 from formatter.import_sort.core import (
     ImportType,
     ImportTypeChecker
@@ -30,15 +31,6 @@ class ImportParser:
         self.construct_new_imports()
         return self.import_cache
 
-    @staticmethod
-    def _import_gen(file: str) -> Generator[tuple[str, str], None, None]:
-        for node in ast.iter_child_nodes(ast.parse(file)):
-            if isinstance(node, ast.Import):
-                yield node.names[0].name, ast.unparse(node)
-            elif isinstance(node, ast.ImportFrom):
-                yield node.module, ast.unparse(node)
-
-
     def get_top_imports(self) -> None:
         file: TextIOWrapper = open(self.filename)
         imports: ImportStorageType = [
@@ -53,10 +45,6 @@ class ImportParser:
         ]
         self.import_cache = imports
         return None
-
-    @staticmethod
-    def sort_key(imp) -> int:
-        return imp.info.type.value
 
     def sort_imports(self) -> None:
         section_imports: list[itertools._grouper] = [
@@ -78,6 +66,19 @@ class ImportParser:
           )
         self.import_cache: str = imports + "\n\n"
         return None
+
+    @staticmethod
+    def _import_gen(file: str) -> Generator[tuple[str, str], None, None]:
+        for node in ast.iter_child_nodes(ast.parse(file)):
+            if isinstance(node, ast.Import):
+                yield node.names[0].name, ast.unparse(node)
+            elif isinstance(node, ast.ImportFrom):
+                yield node.module, ast.unparse(node)
+
+    @staticmethod
+    def sort_key(imp: ImportStorageType) -> int:
+        return imp.info.type.value
+
 
 if __name__ == "__main__":
     print(ImportParser("formatter/import_sort/parse.py").parse())
