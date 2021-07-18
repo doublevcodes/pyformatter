@@ -4,11 +4,11 @@ import itertools
 from typing import Generator
 from typing import NamedTuple
 
-
 from formatter.import_sort.core import (
     ImportType,
     ImportTypeChecker
 )
+
 
 class ImportStorageTypeInfo(NamedTuple):
     code: str
