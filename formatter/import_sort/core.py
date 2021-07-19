@@ -1,5 +1,6 @@
 from enum import auto, Enum
 from distutils import sysconfig
+import os
 from pkgutil import iter_modules
 from pathlib import Path
 
@@ -31,11 +32,11 @@ class ImportTypeChecker:
     def get_import_type(module_name: str) -> ImportType:
         if module_name == "__future__":
             return ImportType.FUTURE_IMPORT
+        elif module_name == Path.cwd().name or module_name.startswith(".") or module_name == "None":
+            return ImportType.LOCAL_IMPORT
         elif module_name in STANDARD_LIB:
             return ImportType.STANDARD_IMPORT
-        elif module_name in THIRD_PARTY_LIB:
-            return ImportType.THIRD_PARTY_IMPORT
         else:
-            return ImportType.LOCAL_IMPORT
+            return ImportType.THIRD_PARTY_IMPORT
         
         
