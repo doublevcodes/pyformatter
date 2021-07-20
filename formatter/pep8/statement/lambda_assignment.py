@@ -1,14 +1,14 @@
 import ast
-from typing import Generator
 
+from ..helpers import _reduce_module
 
 class LambdaParser:
 
     def __init__(self, source: str) -> None:
         self.source = source
 
-    def get_defs(self):
-        lambdas = [assignment for assignment in self._parse() if isinstance(assignment.value, ast.Lambda)]
+    def get_new_defs(self):
+        lambdas = [assignment for assignment in self._parse()]
         for lamb in lambdas:
             yield ast.unparse(
                 self.lambda_to_def(
@@ -19,17 +19,12 @@ class LambdaParser:
 
     def _parse(self):
         tree: ast.Module = ast.parse(self.source)
-        assignments = [node for node in LambdaParser._reduce_module(tree) if isinstance(node, (ast.Assign, ast.AnnAssign))]
+        assignments = [
+            node for node in _reduce_module(tree)
+            if isinstance(node, (ast.Assign, ast.AnnAssign))
+            and isinstance(node.value, ast.Lambda)
+        ]
         return assignments
-
-    @staticmethod
-    def _reduce_module(module: ast.AST) -> Generator[ast.AST, None, None]:
-        for node in ast.iter_child_nodes(module):
-            if not hasattr(node, "body"):
-                yield node
-            else:
-                for ret_node in LambdaParser._reduce_module(node):
-                    yield ret_node
 
     @staticmethod
     def lambda_to_def(func_name: str, lambda_func: ast.Lambda) -> ast.FunctionDef:
@@ -53,7 +48,7 @@ class LambdaFormatter:
         for filename in self.filenames:     
             with open(filename) as file:
                 lambdaparser = LambdaParser(file.read())
-                formatted_lambdas = [(func, ln - 1) for func, ln in lambdaparser.get_defs()]
+                formatted_lambdas = [(func, ln - 1) for func, ln in lambdaparser.get_new_defs()]
 
             with open(filename) as file:
                 filelines = file.readlines()
