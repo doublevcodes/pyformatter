@@ -1,12 +1,28 @@
-test = lambda x: x+1
+from __future__ import barry_as_FLUFL
 
-foo = lambda _: 2 ** _
+import functools
 
-bar = lambda a, b, c, *_, **__: [a, b, c, [x for x in _], [(y, z) for y, z in __]]
+from fastapi import FastAPI
+import flask
+import itertools
 
-if "test" == None:
+from . import *
+
+
+x =  1 + 3
+
+def test(x):
+    return x + 1
+
+def foo(_):
+    return 2 ** _
+
+def bar(a, b, c, *_, **__):
+    return [a, b, c, [x for x in _], [(y, z) for (y, z) in __]]
+
+if 'test' is None:
     pass
-elif 1 != None:
+elif 1 is not None:
     pass
-elif 1 == None or "foo" != None:
+elif 1 is None or 'foo' is not None:
     pass

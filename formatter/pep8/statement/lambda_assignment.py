@@ -2,7 +2,7 @@ import ast
 from typing import Generator
 from typing import Union
 
-from ..helpers import _reduce_module
+from formatter.pep8.helpers import _reduce_module, _replace_tokens
 
 class LambdaParser:
 
@@ -10,7 +10,7 @@ class LambdaParser:
         self.source = source
         return None
 
-    def get_new_defs(self) -> Generator[tuple[str, int]]:
+    def get_new_defs(self) -> Generator[tuple[str, int], None, None]:
         lambdas: list[Union[ast.Assign, ast.AnnAssign]] = [assignment for assignment in self._parse()]
         for lamb in lambdas:
             yield (
@@ -21,7 +21,10 @@ class LambdaParser:
                         lamb.value,
                     )
                 ),
-                lamb.lineno
+                lamb.lineno,
+                lamb.end_lineno,
+                lamb.col_offset,
+                lamb.end_col_offset
             )
 
     def _parse(self) -> list[Union[ast.Assign, ast.AnnAssign]]:
@@ -57,21 +60,9 @@ class LambdaFormatter:
                 
                 lambdaparser = LambdaParser(file.read())
                 formatted_lambdas = [
-                    (func, ln - 1) for func, ln in lambdaparser.get_new_defs()
+                    func for func in lambdaparser.get_new_defs()
                 ]
 
-                file.seek(0)
-                
-                filelines = file.readlines()
-                for formatted_lambda in formatted_lambdas:
-                    filelines[formatted_lambda[1]] = f"{formatted_lambda[0]}\n"
-            
-            with open(filename, "w") as file:
-                new_file = "".join(filelines)
-                file.write(new_file)
+            _replace_tokens(filename, formatted_lambdas)
 
         return None
-
-if __name__ == "__main__":
-    formatter = LambdaFormatter(["lambda_test.py"])
-    formatter.format_lambdas()
